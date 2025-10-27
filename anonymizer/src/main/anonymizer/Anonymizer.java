@@ -46,18 +46,19 @@ public class Anonymizer {
 		try(final var consumer = new KafkaConsumer<Long, byte[]>(props)){
 			consumer.subscribe(Arrays.asList("http_log"));
 
-			final var queue = new LinkedBlockingQueue<ConsumerRecord<Long, byte[]>>();
+			final DAO<ConsumerRecord<Long, byte[]>> fakeCache = new CacheDAO();
+			final DAO<Object[]> clickHouseDAO = new ClickHouseDAO();
 			final var bufferingThread = new Thread(() -> {
 				while(true) {
 					for (final var record : consumer.poll(Duration.ofMillis(100))) {
-						queue.add(record);
+						fakeCache.save(record);
 					}
 				}
 			});
 			final var processingThread = new Thread(() -> {
 				while (true) {
 					try {
-						final var current = queue.poll(10, TimeUnit.MILLISECONDS);
+						final var current = fakeCache.query(-1);
 
 						if (current == null)
 							continue;
@@ -65,7 +66,17 @@ public class Anonymizer {
 						final var message = org.capnproto.Serialize.read(new ArrayInputStream(ByteBuffer.wrap(current.value())));
 						final var httpLogRecord = message.getRoot(HttpLogRecordOuter.HttpLogRecord.factory);
 
-						log.info(httpLogRecord.getRemoteAddr().toString());
+						clickHouseDAO.save(new Object[] {
+							httpLogRecord.getTimestampEpochMilli(),
+								httpLogRecord.getResourceId(),
+								httpLogRecord.getBytesSent(),
+								httpLogRecord.getRequestTimeMilli(),
+								httpLogRecord.getResponseStatus(),
+								httpLogRecord.getCacheStatus(),
+								httpLogRecord.getMethod(),
+								anonymizeAddress(httpLogRecord.getRemoteAddr().toString()),
+								httpLogRecord.getUrl().toString()
+						});
 					}
 					catch (final Exception exception) {
 						log.throwing(Anonymizer.class.getName(), "main", exception);
@@ -81,31 +92,38 @@ public class Anonymizer {
 		}
 	}
 
-	private interface DAO<T> {
-		T save(T object);
-		T query(int id);
+	private static String anonymizeAddress(String address) {
+		return address.substring(0, address.lastIndexOf(".") + 1).concat("X");
 	}
 
-	private class CacheDAO implements DAO<ConsumerRecord<Long, byte[]> {
-		private final LinkedBlockingQueue<ConsumerRecord<Long, byte[]>> fakeCache = new LinkedBLockingQueue<>();
-		
+	private interface DAO<T> {
+		T save(T object);
+		T query(int id) throws Exception;
+	}
+
+	private static class CacheDAO implements DAO<ConsumerRecord<Long, byte[]>> {
+		private final LinkedBlockingQueue<ConsumerRecord<Long, byte[]>> fakeCache = new LinkedBlockingQueue<>();
+
 		public ConsumerRecord<Long, byte[]> save(ConsumerRecord<Long, byte[]> object) {
 			fakeCache.add(object);
 
 			return object;
 		}
 
-		public ConsumerRecord<Long, byte[]> query(int ignored) {
+		public ConsumerRecord<Long, byte[]> query(int ignored) throws Exception {
 			return fakeCache.poll(10, TimeUnit.MILLISECONDS);
 		}
 	}
 
-	private class ClickHouseDAO implements DAO<Object> {
-
-		public HttpLogRecord save(HttpLogRecord object) {
-			
+	private static class ClickHouseDAO implements DAO<Object[]> {
+		public Object[] save(Object[] object) {
+			log.info(Arrays.toString(object));
 
 			return object;
+		}
+
+		public Object[] query(int iD) throws Exception {
+			return null;
 		}
 	}
 }
