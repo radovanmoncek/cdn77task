@@ -1,3 +1,4 @@
 #dirs
 .class
-.libs
+.lib
+.bin
