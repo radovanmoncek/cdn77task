@@ -51,6 +51,7 @@ services:
     image: "grafana/grafana:8.4.5"
     ports:
      - "3000:3000"
+    command: grafana-cli plugins install grafana-clickhouse-datasource
     environment:
       GF_PATHS_DATA : /var/lib/grafana
       GF_SECURITY_ADMIN_PASSWORD : kafka
@@ -88,7 +89,7 @@ services:
     container_name: kafka-ui
     ports:
       - "4000:8080"
-    restart: always
+    #restart: always
     environment:
       - KAFKA_CLUSTERS_0_NAME=DevEnv
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=broker:29092
@@ -113,7 +114,7 @@ services:
     build: docker/ch-proxy
     ports:
       - 8124:8124
-    restart: always
+    #restart: always
     depends_on:
       - clickhouse-server
     container_name: ch-proxy
@@ -121,10 +122,23 @@ services:
   http-log-kafka-producer:
     build: docker/http-log-kafka-producer
     platform: linux/amd64
-    restart: always
+    #restart: always
     environment:
       KAFKA_BOOTSTRAP_SERVERS: "broker:29092"
       KAFKA_PRODUCER_DELAY_MS: 5000
     depends_on:
       - broker
     container_name: log-producer
+  #https://geshan.com.np/blog/2022/01/redis-docker/ 
+  cache:
+    image: redis:6.2-alpine
+    #restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    volumes:
+      - cache:/data
+
+volumes:
+  cache:
+    driver: local
