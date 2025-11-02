@@ -3,6 +3,7 @@
 # Summary
 
 Problem: Because of the GDPR regulations you have to anonymize the client IP. For each record change remoteAddr's last octet to X before sending it over to ClickHouse (e.g. 1.2.3.4 -> 1.2.3.X).
+
 Solution: This is done during pre-processing of Cap'n Proto decoded data. The String is redacted as per aforementioned instructions.
 
 Problem: Each record must be stored to ClickHouse, even in the event of network or server error. Make sure that you handle those appropriately.
@@ -40,7 +41,7 @@ select * from stats_view;
 
 Elapsed: 0.015 sec, read 8.74 thousand rows, 277.27 KB.
 
-|--| Time complexity | Space complexity |
+|---| Time complexity | Space complexity |
 | 1 row | ≈ 131μs | ≈ 31B |
 
 Forma odevzdani je na tobe: zde na GitHubu.
