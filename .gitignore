@@ -1,0 +1,10 @@
+#dirs
+*/
+*/*
+*.*
+!.gitignore
+!anonymizer/
+!anonymizer/**
+.class
+.lib
+.bin
