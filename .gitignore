@@ -8,3 +8,7 @@
 .class
 .lib
 .bin
+*capnproto*
+docker
+etc
+grafana
