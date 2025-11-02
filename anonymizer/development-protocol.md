@@ -41,7 +41,8 @@ select * from stats_view;
 
 Elapsed: 0.015 sec, read 8.74 thousand rows, 277.27 KB.
 
-|---| Time complexity | Space complexity |
+|| Time complexity | Space complexity |
+|---|---|---|
 | 1 row | ≈ 131μs | ≈ 31B |
 
 Forma odevzdani je na tobe: zde na GitHubu.
