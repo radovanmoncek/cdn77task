@@ -1,34 +1,25 @@
 package anonymizer;
 
 import java.util.logging.*;
-import java.util.*;
-import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.KafkaStreams;
-//import org.apache.kafka.streams.StreamsBuilder;
-//import org.apache.kafka.streams.StreamsConfig;
-//import org.apache.kafka.streams.*;
-//import org.apache.kafka.streams.kstream.*;
-import org.apache.kafka.clients.consumer.*;
-import org.apache.kafka.common.serialization.*;
-
-import java.time.Duration;
-import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
-import java.util.Arrays;
-import java.io.*;
 import java.util.concurrent.*;
 import java.util.*;
 
-
 import com.clickhouse.client.api.*;
 import com.clickhouse.client.api.metrics.*;
-
 
 public class ClickHouseDAO implements DAO<List<Object[]>> {
 	private static final Logger log = Logger.getLogger(ClickHouseDAO.class.getName());
 	private final Client client;
 
 	public ClickHouseDAO(final Client client) {
+		log.getParent().setLevel(Level.ALL);
+		
+		final var handlers = log.getParent().getHandlers();
+
+		for(var i = 0; i < handlers.length; ++i){
+			handlers[0].setLevel(Level.ALL);
+		}	
+		
 		this.client = client;
 	}
 
@@ -88,7 +79,7 @@ public class ClickHouseDAO implements DAO<List<Object[]>> {
 			result.append("\r\n");
 
 			for(final var reader : response){
-				result.append(String.format("%s Requests: %s\r\n", reader.getObject(/*"response_status"*/3) + "", reader.getInteger(1) + ""));
+				result.append(String.format("%s Requests: %s\r\n", reader.getObject(3) + "", reader.getInteger(1) + ""));
 			}
 
 			return result.toString();

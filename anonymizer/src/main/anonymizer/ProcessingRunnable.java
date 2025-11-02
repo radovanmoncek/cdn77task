@@ -2,32 +2,29 @@ package anonymizer;
 
 import java.util.logging.*;
 import java.nio.*;
-import org.capnproto.*;
-import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.KafkaStreams;
-import org.apache.kafka.clients.consumer.*;
-import org.apache.kafka.common.serialization.*;
-
-import java.time.Duration;
-import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
-import java.util.Arrays;
-import java.io.*;
 import java.util.concurrent.*;
 import java.util.*;
 
+import org.capnproto.*;
 
-import com.clickhouse.client.api.*;
-import com.clickhouse.client.api.metrics.*;
-
-
+/**
+ * Performs a "pseudo" transaction by re-inserting the unprocessed logs back into the blocking queue.
+ */
 public class ProcessingRunnable implements Runnable {
 	private static final Logger log = Logger.getLogger(ProcessingRunnable.class.getName());
-	private final DAO<ConsumerRecord<Long, byte[]>> fakeCache;
+	private final DAO<byte[]> cache;
 	private final DAO<List<Object[]>> clickHouseDAO;
 
-	public ProcessingRunnable(final DAO<ConsumerRecord<Long, byte[]>> cache, final DAO<List<Object[]>> click){
-		fakeCache = cache;
+	public ProcessingRunnable(final DAO<byte[]> cache, final DAO<List<Object[]>> click){
+		log.getParent().setLevel(Level.ALL);
+		
+		final var handlers = log.getParent().getHandlers();
+
+		for(var i = 0; i < handlers.length; ++i){
+			handlers[0].setLevel(Level.ALL);
+		}
+
+		this.cache = cache;
 		clickHouseDAO = click;
 	}
 
@@ -37,10 +34,10 @@ public class ProcessingRunnable implements Runnable {
 			try {
 				TimeUnit.MINUTES.sleep(1);
 
-				final var batchInsertBuffer = new LinkedList<ConsumerRecord<Long, byte[]>>();
-				ConsumerRecord<Long, byte[]> current;
+				final var batchInsertBuffer = new LinkedList<byte[]>();
+				byte[] current;
 
-				while((current = fakeCache.queryNoWait()) != null){
+				while((current = cache.queryNoWait()) != null){
 					if (current == null)
 						continue;
 
@@ -48,7 +45,7 @@ public class ProcessingRunnable implements Runnable {
 				}
 
 				if(clickHouseDAO.save(batchInsertBuffer.stream().map(this::transformConsumerRecord).toList()) == null)
-					batchInsertBuffer.forEach(fakeCache::save);
+					batchInsertBuffer.forEach(cache::save);
 			}
 			catch (final Exception exception) {
 				log.throwing(Anonymizer.class.getName(), "main", exception);
@@ -56,9 +53,9 @@ public class ProcessingRunnable implements Runnable {
 		}
 	}
 
-	private Object[] transformConsumerRecord(final ConsumerRecord<Long, byte[]> record) {
+	private Object[] transformConsumerRecord(final byte[] record) {
 		try {
-			final var message = org.capnproto.Serialize.read(new ArrayInputStream(ByteBuffer.wrap(record.value())));
+			final var message = org.capnproto.Serialize.read(new ArrayInputStream(ByteBuffer.wrap(record)));
 			final var httpLogRecord = message.getRoot(HttpLogRecordOuter.HttpLogRecord.factory);
 
 			return new Object[]{
