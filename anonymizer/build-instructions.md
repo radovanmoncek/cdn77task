@@ -29,6 +29,7 @@ Prerequisities:
 - Have Java installed, and properly setup on your system (javac, java, javadoc, etc.)
 - Your system must have sufficient resources
 - You have renamed the .env_template file to .env, and entered your credentials (!!!! DO NOT COMMIT, OR SHOW THE RESULTING .env FILE TO ANYONE !!!!)
+  - The default Redis password is in the docker-compose.yml file
 
 Building:
 1. Clone this repository to your system, or download the source directory
