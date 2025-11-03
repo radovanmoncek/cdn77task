@@ -77,6 +77,9 @@ public class CLIProcessor {
 	private void displayHelp() {
 		System.out.println("Anonymizer usage:\r\n");
 		System.out.println("run.bat <OPTION>|<process|stats>\r\n");
+		System.out.println("ARGUMENTS:");
+                System.out.println("process start processing Kafka data");
+		System.out.println("stats display ClickHouse statistics\r\n");
 		System.out.println("OPTION:");
 		System.out.println("--help displays this message");
 		System.out.println("--version prints version and exits");
