@@ -39,7 +39,7 @@ public class ProcessingRunnable implements Runnable {
 	public void run(){
 		while (true) {
 			try {
-				TimeUnit.MINUTES.sleep(RATE_LIMIT_SLEEP_SECONDS);
+				TimeUnit.SECONDS.sleep(RATE_LIMIT_SLEEP_SECONDS);
 
 				final var batchInsertBuffer = new LinkedList<byte[]>();
 				byte[] current;
