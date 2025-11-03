@@ -8,8 +8,8 @@ import java.util.*;
 import org.capnproto.*;
 
 /**
- * Performs a "pseudo" transaction by re-inserting the unprocessed logs back into the blocking queue.
- */
+  * This Runnable is to be run from within a Thread that is responsible for processing incoming Kafka data, decoding them from Cap'n Proto fromat, anonymizing the remoteAddr, and storing them into ClickHouse.
+  */
 public class ProcessingRunnable implements Runnable {
 	private static final Logger log = Logger.getLogger(ProcessingRunnable.class.getName());
 	private final DAO<byte[]> cache;
@@ -28,6 +28,12 @@ public class ProcessingRunnable implements Runnable {
 		clickHouseDAO = click;
 	}
 
+	/**
+	 * This method is responsible for processing incoming data from Redis, and inserting them into ClickHouse.
+	 * Performs a "pseudo" transaction by re-inserting the unprocessed logs back into the blocking queue.
+	 * Event loop is being run.
+	 * Runs nested loop, worst time complexity should be O(N^2)
+ 	 */
 	@Override
 	public void run(){
 		while (true) {
@@ -53,6 +59,9 @@ public class ProcessingRunnable implements Runnable {
 		}
 	}
 
+	/**
+	  * This method decodes the Cap'n Proto encoded data as Object[] for ClickHouse insertion.
+	  */
 	private Object[] transformConsumerRecord(final byte[] record) {
 		try {
 			final var message = org.capnproto.Serialize.read(new ArrayInputStream(ByteBuffer.wrap(record)));
@@ -77,6 +86,10 @@ public class ProcessingRunnable implements Runnable {
 		}
 	}
 
+	/**
+	  * Performs the remoteAddr anonymization, using last octet censoring.
+	  * Address must be in valid decimal format: 1octet.2octet.3octet.4octet, the method will behave unexpectedly otherwise.
+	  */
 	private String anonymizeAddress(String address) {
 		return address.substring(0, address.lastIndexOf(".") + 1).concat("X");
 	}

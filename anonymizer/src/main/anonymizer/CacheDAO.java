@@ -9,7 +9,7 @@ import java.util.logging.*;
 import redis.clients.jedis.UnifiedJedis;
 
 /**
- * This DAO class should encapsulate a thread safe cache implementation for immediate Kafka topic data buffering.
+ * This DAO class encapsulates a thread safe cache implementation for immediate Kafka topic data buffering.
  */
 public class CacheDAO implements DAO<byte[]> {
 	private final Logger log = Logger.getLogger(CacheDAO.class.getName());
@@ -45,6 +45,14 @@ public class CacheDAO implements DAO<byte[]> {
 		return accessRedis(backingQueue.poll(), null);
 	}
 
+	/**
+	  * This is the ONLY method to be used for thread safe Redis access.
+	  * Both directions of access are supported (read, write), based on arguments supplied.
+	  * The parameters of this method are mutualy exclusive implicitly (supplying both retrieves a value; supplying neither returns null)
+	  * @param key the key to be used for reading data, value must be ommited
+	  * @param value the value to be used for writing data, key must be ommited
+	  * @return identity of value if writting is being performed; retrieved value, if reading took place; null otherwise
+	  */
 	synchronized private final byte[] accessRedis(final String key, final byte[] value){
 		if(key != null){
 			log.info("Reading from Redis " + key);

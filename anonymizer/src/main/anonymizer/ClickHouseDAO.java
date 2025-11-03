@@ -7,6 +7,10 @@ import java.util.*;
 import com.clickhouse.client.api.*;
 import com.clickhouse.client.api.metrics.*;
 
+/**
+  * DAO for ClickHouse database access.
+  * Thread safety is NOT provided.
+  */
 public class ClickHouseDAO implements DAO<List<Object[]>> {
 	private static final Logger log = Logger.getLogger(ClickHouseDAO.class.getName());
 	private final Client client;
@@ -53,14 +57,19 @@ public class ClickHouseDAO implements DAO<List<Object[]>> {
 		return objects;
 	}
 
+	@Override
 	public List<Object[]> query(int iD) throws Exception {
 		return null;
 	}
 
+	@Override
 	public List<Object[]> queryNoWait() throws Exception {
 		return null;
 	}
 
+	/**
+	  * Method that handles the `stats` argument.
+	  */
 	public String queryWithPrettyPrint(final String sQL){
 		final var future = client.queryRecords(sQL);
 
@@ -91,6 +100,9 @@ public class ClickHouseDAO implements DAO<List<Object[]>> {
 		}
 	}
 
+	/**
+	  * Check ClickHouse connection status.
+	  */
 	public void ping() {
 		log.info(client.ping() + "");
 	}

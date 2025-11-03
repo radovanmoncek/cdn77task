@@ -18,7 +18,9 @@ import java.util.*;
 import com.clickhouse.client.api.*;
 import com.clickhouse.client.api.metrics.*;
 
-
+/**
+  * Processes arguments passed / delegated from the main method.
+  */
 public class CLIProcessor {
 	private static final Logger log = Logger.getLogger(CLIProcessor.class.getName());
 	final ClickHouseDAO clickHouseDAO;
@@ -27,6 +29,9 @@ public class CLIProcessor {
 		clickHouseDAO = (ClickHouseDAO) click;
 	}
 
+	/**
+	  * Performs handling of any supplied arguments.
+	  */
 	public void processArgs(final String[] args){
 		if (args.length == 0){
 			System.out.println("Invalid ammount of arguments provided.");

@@ -13,6 +13,7 @@ import redis.clients.jedis.UnifiedJedis;
 
 /**
  * Main program entrypoint.
+ * Initializes external services, and starts consuming, and processing threads.
  * References:
  * https://kafka.apache.org/41/documentation/streams/tutorial
  * https://www.baeldung.com/apache-kafka
