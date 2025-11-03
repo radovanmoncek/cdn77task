@@ -11,6 +11,7 @@ import org.capnproto.*;
   * This Runnable is to be run from within a Thread that is responsible for processing incoming Kafka data, decoding them from Cap'n Proto fromat, anonymizing the remoteAddr, and storing them into ClickHouse.
   */
 public class ProcessingRunnable implements Runnable {
+	private final int RATE_LIMIT_SLEEP_SECONDS = 90;
 	private static final Logger log = Logger.getLogger(ProcessingRunnable.class.getName());
 	private final DAO<byte[]> cache;
 	private final DAO<List<Object[]>> clickHouseDAO;
@@ -38,7 +39,7 @@ public class ProcessingRunnable implements Runnable {
 	public void run(){
 		while (true) {
 			try {
-				TimeUnit.MINUTES.sleep(1);
+				TimeUnit.MINUTES.sleep(RATE_LIMIT_SLEEP_SECONDS);
 
 				final var batchInsertBuffer = new LinkedList<byte[]>();
 				byte[] current;

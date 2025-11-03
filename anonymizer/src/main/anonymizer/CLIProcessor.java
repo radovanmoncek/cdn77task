@@ -22,6 +22,7 @@ import com.clickhouse.client.api.metrics.*;
   * Processes arguments passed / delegated from the main method.
   */
 public class CLIProcessor {
+	private final int RATE_LIMIT_SLEEP_SECONDS = 90;
 	private static final Logger log = Logger.getLogger(CLIProcessor.class.getName());
 	final ClickHouseDAO clickHouseDAO;
 
@@ -58,11 +59,11 @@ public class CLIProcessor {
 		System.out.println("Checking client status");
 		clickHouseDAO.ping();
 		System.out.println("Gathering stats ...");
-		TimeUnit.SECONDS.sleep(70);
+		TimeUnit.SECONDS.sleep(RATE_LIMIT_SLEEP_SECONDS);
 		System.out.println("Rsponse status stats");
 		System.out.println(clickHouseDAO.queryWithPrettyPrint("select count(resource_id), count(remote_addr), response_status, count(cache_status) from stats_view group by response_status;"));
 		System.out.println("Gathering stats ...");
-		TimeUnit.SECONDS.sleep(70);
+		TimeUnit.SECONDS.sleep(RATE_LIMIT_SLEEP_SECONDS);
 		System.out.println("Cache status stats");
 		System.out.println(clickHouseDAO.queryWithPrettyPrint("select count(resource_id), count(remote_addr), cache_status, count(response_status) from stats_view group by cache_status;"));
 		System.exit(0);
