@@ -6,9 +6,9 @@ This project contains build scripts for building, and running the program (inspi
 *I highly recommend to read EVERY script BEFORE running it, and running only AFTER gaining a GOOD understanding of ALL of the steps peroformed*
 
 The scripts are:
-- /compile.bat compiles the program for the Windows NT platform
-- /run.bat runs the program on the Windows NT platform
-- /doc.bat compiles the javadocs on the Windows NT plarform
+- [compile.bat](./compile.bat) compiles the program for the Windows NT platform
+- [run.bat](./run.bat) runs the program on the Windows NT platform
+- [doc.bat](./doc.bat) compiles the javadocs on the Windows NT plarform
 
 *All of the aforementioned scripts should also run on other platforms (e.g. use bash instead, adn replace file separators)*
 
@@ -16,11 +16,11 @@ The scripts are:
 No build system like Apache Maven, or Gradle, etc. is used, for simplicity.
 
 Most important files, and directories / folders:
-- /src is the classic Java source code directory
-- /.bin should contain any binary / executable files (e.g. the Kafka Consumer client)
-- /.lib should contain eny external libraries used for compilation, and running of the project (jars)
-- /.doc should contain javadoc output
-- /.class should be used as javac output folder for bytecode .class files
+- [src](./src) is the classic Java source code directory
+- [.lib](./.bin) should contain any binary / executable files (e.g. the Kafka Consumer client)
+- [.lib](./.lib) should contain eny external libraries used for compilation, and running of the project (jars)
+- [.doc](./.doc) should contain javadoc output
+- [.class](./.class) should be used as javac output folder for bytecode .class files
 
 ### How can I build / run the program (Windows NT)?
 
@@ -62,7 +62,7 @@ OPTION:
 
 ### Dependencies
 
-Please see the contents of /.libs
+Please see the contents of [.lib](./.lib)
 
 ### Program showcase
 
