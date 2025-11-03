@@ -66,6 +66,6 @@ Please see the contents of [.lib](./.lib)
 
 ### Program showcase
 
-[Showcase 1](Screenshot 2025-11-03 203839.png)
-[Showcase 2](Recording 2025-11-03 at 19.05.24.gif)
-[Showcase 3](Recording 2025-11-03 at 19.59.56.gif)
+[Showcase 1](./Screenshot 2025-11-03 203839.png)
+[Showcase 2](./Recording 2025-11-03 at 19.05.24.gif)
+[Showcase 3](./Recording 2025-11-03 at 19.59.56.gif)
