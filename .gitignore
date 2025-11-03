@@ -13,3 +13,4 @@ docker
 etc
 grafana
 .env
+.doc
