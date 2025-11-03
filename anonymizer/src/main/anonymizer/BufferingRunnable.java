@@ -1,42 +1,33 @@
 package anonymizer;
 
-import java.util.logging.*;
-import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.KafkaStreams;
-//import org.apache.kafka.streams.StreamsBuilder;
-//import org.apache.kafka.streams.StreamsConfig;
-//import org.apache.kafka.streams.*;
-//import org.apache.kafka.streams.kstream.*;
 import org.apache.kafka.clients.consumer.*;
-import org.apache.kafka.common.serialization.*;
 
+import java.util.logging.*;
 import java.time.Duration;
-import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
-import java.util.Arrays;
-import java.io.*;
-import java.util.concurrent.*;
-import java.util.*;
 
-
-import com.clickhouse.client.api.*;
-import com.clickhouse.client.api.metrics.*;
-
-
+/**
+ * This is a Runnable to be run from inside of the buffering thread.
+ * This Runnable is responsible for saving incoming traffic from Apache Kafka to Redis cache.
+ */
 public class BufferingRunnable implements Runnable {
-	final DAO<ConsumerRecord<Long, byte[]>> fakeCache;
+	private final DAO<byte[]> cache;
 	private final KafkaConsumer<Long, byte[]> consumer;
 	
-	public BufferingRunnable(DAO<ConsumerRecord<Long, byte[]>> cache, final KafkaConsumer<Long, byte[]> consumer){
-		fakeCache = cache;
+	public BufferingRunnable(final DAO<byte[]> cache, final KafkaConsumer<Long, byte[]> consumer){
+		this.cache = cache;
 		this.consumer = consumer;
 	}
 
+	/**
+	  * Buffers incoming traffic from Apacahe Kafka into the Redis DAO.
+	  * Runs an event loop with nested loop.
+	  * The worst time complexity should be N(n^2)
+	  */
 	@Override
 	public void run(){
 		while(true) {
 			for (final var record : consumer.poll(Duration.ofMillis(100))) {
-				fakeCache.save(record);
+				((CacheDAO) cache).save(record);
 			}
 		}
 	}

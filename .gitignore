@@ -1,0 +1,16 @@
+#dirs
+*/
+*/*
+*.*
+!.gitignore
+!anonymizer/
+!anonymizer/**
+.class
+.lib
+.bin
+*capnproto*
+docker
+etc
+grafana
+.env
+.doc

@@ -1,34 +1,29 @@
 package anonymizer;
 
 import java.util.logging.*;
-import java.util.*;
-import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.KafkaStreams;
-//import org.apache.kafka.streams.StreamsBuilder;
-//import org.apache.kafka.streams.StreamsConfig;
-//import org.apache.kafka.streams.*;
-//import org.apache.kafka.streams.kstream.*;
-import org.apache.kafka.clients.consumer.*;
-import org.apache.kafka.common.serialization.*;
-
-import java.time.Duration;
-import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
-import java.util.Arrays;
-import java.io.*;
 import java.util.concurrent.*;
 import java.util.*;
-
 
 import com.clickhouse.client.api.*;
 import com.clickhouse.client.api.metrics.*;
 
-
+/**
+  * DAO for ClickHouse database access.
+  * Thread safety is NOT provided.
+  */
 public class ClickHouseDAO implements DAO<List<Object[]>> {
 	private static final Logger log = Logger.getLogger(ClickHouseDAO.class.getName());
 	private final Client client;
 
 	public ClickHouseDAO(final Client client) {
+		log.getParent().setLevel(Level.ALL);
+		
+		final var handlers = log.getParent().getHandlers();
+
+		for(var i = 0; i < handlers.length; ++i){
+			handlers[i].setLevel(Level.INFO);
+		}	
+		
 		this.client = client;
 	}
 
@@ -62,14 +57,19 @@ public class ClickHouseDAO implements DAO<List<Object[]>> {
 		return objects;
 	}
 
+	@Override
 	public List<Object[]> query(int iD) throws Exception {
 		return null;
 	}
 
+	@Override
 	public List<Object[]> queryNoWait() throws Exception {
 		return null;
 	}
 
+	/**
+	  * Method that handles the `stats` argument.
+	  */
 	public String queryWithPrettyPrint(final String sQL){
 		final var future = client.queryRecords(sQL);
 
@@ -88,7 +88,7 @@ public class ClickHouseDAO implements DAO<List<Object[]>> {
 			result.append("\r\n");
 
 			for(final var reader : response){
-				result.append(String.format("%s Requests: %s\r\n", reader.getObject(/*"response_status"*/3) + "", reader.getInteger(1) + ""));
+				result.append(String.format("%s Requests: %s\r\n", reader.getObject(3) + "", reader.getInteger(1) + ""));
 			}
 
 			return result.toString();
@@ -100,6 +100,9 @@ public class ClickHouseDAO implements DAO<List<Object[]>> {
 		}
 	}
 
+	/**
+	  * Check ClickHouse connection status.
+	  */
 	public void ping() {
 		log.info(client.ping() + "");
 	}
