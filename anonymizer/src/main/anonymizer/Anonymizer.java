@@ -1,11 +1,11 @@
 package anonymizer;
 
 import java.util.logging.*;
+import java.util.*;
+import java.io.*;
 
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.serialization.*;
-
-import java.util.*;
 
 import com.clickhouse.client.api.*;
 
@@ -20,7 +20,12 @@ import redis.clients.jedis.UnifiedJedis;
 public class Anonymizer {
 	private static final Logger log = Logger.getLogger(Anonymizer.class.getName());
 
-	public static void main(final String[] args) {
+	public static void main(final String[] args) throws Exception {
+		final var envFileStream = new FileInputStream(".." + File.separator + ".env");
+		final var envProperties = new java.util.Properties();
+		
+		envProperties.load(envFileStream);
+
 		final var props = new Properties();
 
 		log.setLevel(Level.ALL);
@@ -33,8 +38,8 @@ public class Anonymizer {
 
 		try(
 				final var consumer = new KafkaConsumer<Long, byte[]>(props); 
-				final var client = new Client.Builder().addEndpoint("http://127.0.0.1:8124").setUsername("default").setPassword("").compressServerResponse(true).build();
-				final var jedis = new UnifiedJedis("redis://default:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@localhost:6379")
+				final var client = new Client.Builder().addEndpoint(envProperties.getProperty("CLICKHOUSE_ENDPOINT")).setUsername(envProperties.getProperty("CLICKHOUSE_USERNAME")).setPassword("").compressServerResponse(true).build();
+				final var jedis = new UnifiedJedis(envProperties.getProperty("REDIS_URL"))
 		   ){
 			final DAO<byte[]> cache = new CacheDAO(jedis);
 			final DAO<List<Object[]>> clickHouseDAO = new ClickHouseDAO(client);
@@ -53,6 +58,9 @@ public class Anonymizer {
 		   }
 		catch (final Exception exception) {
 			log.throwing(Anonymizer.class.getName(), "main", exception);
+		}
+		finally{
+			envFileStream.close();
 		}
 	}
 }
