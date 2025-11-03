@@ -30,6 +30,11 @@ Prerequisities:
 - Your system must have sufficient resources
 - You have renamed the .env_template file to .env, and entered your credentials (!!!! DO NOT COMMIT, OR SHOW THE RESULTING .env FILE TO ANYONE !!!!)
   - The default Redis password is in the docker-compose.yml file
+- You have run the following SQL in your running Docker ClickHouse instance
+```sql
+create table if not exists http_log (timestamp DateTime, resource_id UInt64, bytes_sent UInt64, request_time_milli UInt64, response_status UInt16, cache_status LowCardinality(String), method LowCardinality(String), remote_addr String, url String) engine = MergeTree() ORDER BY (remote_addr, resource_id);
+create or replace view stats_view as select resource_id, remote_addr, response_status, cache_status from http_log;
+```
 
 Building:
 1. Clone this repository to your system, or download the source directory
