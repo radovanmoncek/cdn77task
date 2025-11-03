@@ -33,10 +33,14 @@ Redis was chosen for this task, as it is very performant, allows easy persistenc
 
 *Problem*: Characterize the aggregated select query time to show the table architecture is fit for purpose. Provide an estimate of disk space required given average incoming message rate retention of the aggregated data
 
-*Solution*:
+*Solution* (consulted with Copilot AI for review):
 
 ```sql
 select * from stats_view;
+
+select count(resource_id), count(remote_addr), response_status, count(cache_status) from stats_view group by response_status;
+
+select count(resource_id), count(remote_addr), cache_status, count(response_status) from stats_view group by cache_status;
 ```
 
 View table structure
@@ -48,27 +52,42 @@ cache_status LowCardinality(String)
 remote_addr String
 ```
 
-Estimations based on following query metrics from ClickHouse proxy: Elapsed: 0.015 sec, read 8.74 thousand rows, 277.27 KB.
+The following table shows query `select * from stats_view;` made 4 times againts the view through the proxy, and /play web UI of ClickHouse.
+
+| Time complexity | Row count | Space complexity |
+|---|---|---|
+| 0.001 sec | read 1.22 thousand rows | 38.85 KB |
+| 0.001 sec | read 1.22 thousand rows | 38.85 KB |
+| 0.001 sec | read 1.22 thousand rows | 38.85 KB | 
+| 0.001 sec | read 1.22 thousand rows | 38.85 KB |
+
+The following table shows query `select count(resource_id), count(remote_addr), cache_status, count(response_status) from stats_view group by cache_status;` made 4 times againts the view through the proxy, and /play web UI of ClickHouse.
 
 | Row count | Time complexity | Space complexity |
 |---|---|---|
-| 1 row | ≈ 1.7μs | ≈ 31B |
-| 10 rows | ≈ 17μs | ≈ 310B |
-| 1000 rows | ≈ 1.7ms | ≈ 31KB |
-| 10000 rows | ≈ 17ms | ≈ 310KB |
-| 1000000 rows | ≈ 1.7s | ≈ 31MB |
+| 11.07 thousand rows | 0.001 sec | 351.18 KB |
+| 11.07 thousand rows | 0.001 sec | 351.18 KB |
+| 11.07 thousand rows | 0.001 sec | 351.18 KB | 
+| 11.07 thousand rows | 0.001 sec | 351.18 KB |
 
-Estimated incoming / inbound Kafka message rate is set at ≈ 1 message per 5 seconds => ≈ 12 messages per minute and we store accumulated messages every 90 seconds => ClickHouse stores ≈ 18 messages per 90 seconds
+The following table shows query `select count(resource_id), count(remote_addr), count(cache_status), response_status from stats_view group by response_status;` made 4 times againts the view through the proxy, and /play web UI of ClickHouse.
 
-Then, given estimates above, and linear query scaling =>
-
-| Row count | Time complexity | Space complexity |
+| Time complexity | Row count | Space complexity |
 |---|---|---|
-| 18 rows | ≈ 30.6μs | ≈ 558B |
-| 180 rows | ≈ 306μs | ≈ 5.58KB |
-| 18000 rows | ≈ 30.6ms | ≈ 558KB |
-| 180000 rows | ≈ 306ms | ≈ 5.58MB |
-| 18000000 rows | ≈ 30.6s | ≈ 558MB |
+| 0.002 sec | read 11.07 thousand rows | 351.18 KB |
+| 0.002 sec | read 11.07 thousand rows | 351.18 KB |
+| 0.002 sec | read 11.07 thousand rows | 351.18 KB | 
+| 0.002 sec | read 11.07 thousand rows | 351.18 KB |
+
+Estimated incoming / inbound Kafka message rate is set at ≈ 1 message per 5 seconds => ≈ 12 messages per minute and we store accumulated messages every 90 seconds => ClickHouse stores ≈ 18 messages per 90 seconds.
+
+One row of such record will look like the following 
+
+| 294747541 | 1.127.90.X | 502 | EXPIRED |
+
+Giving us an estimate of 64B + 15B + 16B + max 11B = 106B per row (Worst case scenario).
+
+We can thus expect an influx of 18 * 106B = 1908B per 90 seconds => an everage of 2KB per 90s (worst case scenario) of data (assuming perfect 90 second "batch" of 18 insert, we could ccumulate more / less).
 
 Forma odevzdani je na tobe: zde na GitHubu.
 
