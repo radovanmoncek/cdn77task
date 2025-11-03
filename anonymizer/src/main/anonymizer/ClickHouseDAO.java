@@ -21,7 +21,7 @@ public class ClickHouseDAO implements DAO<List<Object[]>> {
 		final var handlers = log.getParent().getHandlers();
 
 		for(var i = 0; i < handlers.length; ++i){
-			handlers[0].setLevel(Level.ALL);
+			handlers[i].setLevel(Level.INFO);
 		}	
 		
 		this.client = client;

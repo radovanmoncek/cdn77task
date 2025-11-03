@@ -42,7 +42,7 @@ public class CacheDAO implements DAO<byte[]> {
 
 	@Override
 	public byte[] queryNoWait() {
-		return accessRedis(backingQueue.poll(), null);
+		return accessRedis(backingQueue.peek(), null);
 	}
 
 	/**
@@ -59,9 +59,10 @@ public class CacheDAO implements DAO<byte[]> {
 			
 			final var tempValue = jedis.get(key);
 
-			jedis.del(key);
+			if(jedis.del(key) == 1)
+				backingQueue.poll();
 
-			return Base64.getDecoder().decode(tempValue);
+			return tempValue == null? null : Base64.getDecoder().decode(tempValue);
 		}
 
 		if(value == null)
