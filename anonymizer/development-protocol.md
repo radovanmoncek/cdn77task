@@ -85,9 +85,9 @@ One row of such record will look like the following
 
 | 294747541 | 1.127.90.X | 502 | EXPIRED |
 
-Giving us an estimate of 64B + 15B + 16B + max 11B = 106B per row (Worst case scenario).
+Giving us an estimate of 64B + 15B + 16B + max 11B = 106B per row (Worst case scenario). This is without ClickHouse metadata overhead, only our stored data. (Partially taken from Copilot AI review - metadata overhead).
 
-We can thus expect an influx of 18 * 106B = 1908B per 90 seconds => an everage of 2KB per 90s (worst case scenario) of data (assuming perfect 90 second "batch" of 18 insert, we could ccumulate more / less).
+We can thus expect an influx of 18 * 106B = 1908B per 90 seconds => an everage of at least 2KB per 90s (worst case scenario) of data, without ClickHouse metadata overhead (assuming perfect 90 second "batch" of 18 inserts, we could accumulate more / less). (Partially taken from Copilot AI review - batch insert)
 
 Forma odevzdani je na tobe: zde na GitHubu.
 
