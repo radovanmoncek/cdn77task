@@ -1,4 +1,4 @@
-# References
+### References
 - https://linuxize.com/post/how-to-unzip-gz-file/
 ## 01/11/2025 23:30:08
 - https://multigenesys.com/blog/how-to-install-and-connect-to-clickhouse-using-java
@@ -208,3 +208,9 @@
 - https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/summap
 - https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/count
 - https://clickhouse.com/docs/examples/aggregate-function-combinators/sumIf
+- https://clickhouse.com/docs/sql-reference/data-types/int-uint
+- https://clickhouse.com/docs/sql-reference/data-types/string
+
+- Inspiration
+	- https://www.youtube.com/@TsodingDaily
+	- https://www.yegor256.com/
